@@ -234,29 +234,52 @@ const cropToFinalSize = (img: HTMLImageElement, box: { x: number, y: number, wid
   
   const ctx = tempCanvas.getContext('2d')!
   
-
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, 0, targetWidth, targetHeight)
+  // เปลี่ยนเป็นพื้นหลังโปร่งใส
+  ctx.clearRect(0, 0, targetWidth, targetHeight)
   
   // คำนวณอัตราส่วนการปรับขนาด
   const scaleX = targetWidth / box.width
   const scaleY = targetHeight / box.height
   const scale = Math.min(scaleX, scaleY)
   
-  // คำนวณตำแหน่งกึ่งกลาง
   const scaledWidth = box.width * scale
   const scaledHeight = box.height * scale
   const offsetX = (targetWidth - scaledWidth) / 2
   const offsetY = (targetHeight - scaledHeight) / 2
-  
 
+  // วาดภาพต้นฉบับลงบน canvas ชั่วคราว
+  const tempCanvas2 = document.createElement('canvas')
+  tempCanvas2.width = box.width
+  tempCanvas2.height = box.height
+  const ctx2 = tempCanvas2.getContext('2d')!
+  ctx2.drawImage(img, box.x, box.y, box.width, box.height, 0, 0, box.width, box.height)
+
+  // ลบพื้นหลัง
+  const imageData = ctx2.getImageData(0, 0, box.width, box.height)
+  const data = imageData.data
+  const threshold = 200 // ค่าความเข้มของสีที่จะถือว่าเป็นพื้นหลัง
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i]
+    const g = data[i + 1]
+    const b = data[i + 2]
+    const brightness = (r + g + b) / 3
+
+    if (brightness > threshold) {
+      data[i + 3] = 0 // ตั้งค่า alpha เป็น 0 (โปร่งใส)
+    }
+  }
+
+  ctx2.putImageData(imageData, 0, 0)
+
+  // วาดภาพที่ลบพื้นหลังแล้วลงบน canvas หลัก
   ctx.drawImage(
-    img,
-    box.x, box.y, box.width, box.height,
+    tempCanvas2,
+    0, 0, box.width, box.height,
     offsetX, offsetY, scaledWidth, scaledHeight
   )
   
-  return tempCanvas.toDataURL()
+  return tempCanvas.toDataURL('image/png')
 }
 
 
