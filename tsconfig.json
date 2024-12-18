@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "node", 
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["opencv.js", "@tensorflow/tfjs"],
+    "typeRoots": ["./node_modules/@types", "./types"]
+  },
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
