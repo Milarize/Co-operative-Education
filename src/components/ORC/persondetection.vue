@@ -126,6 +126,27 @@ const detectAndRotateImage = async (imageData: string): Promise<{resultImage: st
         const finalImage = new cv.Mat();
         cv.addWeighted(rotatedImage, 1, whiteBackground, 0, 0, finalImage);
 
+        // หาขอบภาพที่ตั้งฉากหลังจากหมุน
+        const rotatedGray = new cv.Mat();
+        cv.cvtColor(finalImage, rotatedGray, cv.COLOR_RGBA2GRAY);
+        const edges = new cv.Mat();
+        cv.Canny(rotatedGray, edges, 50, 150, 3);
+        
+        // ใช้ HoughLinesP เพื่อหาเส้นตรง
+        const rectLines = new cv.Mat();
+        cv.HoughLinesP(edges, rectLines, 1, Math.PI/180, 50, 50, 10);
+
+        // วาดเส้นสีแดงบนขอบที่ตั้งฉาก
+        for (let i = 0; i < rectLines.rows; i++) {
+          const x1 = rectLines.data32S[i * 4];
+          const y1 = rectLines.data32S[i * 4 + 1];
+          const x2 = rectLines.data32S[i * 4 + 2];
+          const y2 = rectLines.data32S[i * 4 + 3];
+          
+          // วาดเส้นสีแดง
+          cv.line(finalImage, new cv.Point(x1, y1), new cv.Point(x2, y2), new cv.Scalar(255, 0, 0, 255), 2);
+        }
+
         const outputCanvas = document.createElement('canvas');
         cv.imshow(outputCanvas, finalImage);
         
@@ -143,6 +164,9 @@ const detectAndRotateImage = async (imageData: string): Promise<{resultImage: st
         contours.delete();
         hierarchy.delete();
         whiteBackground.delete();
+        rotatedGray.delete();
+        edges.delete();
+        rectLines.delete();
         finalImage.delete();
 
         resolve({
@@ -181,10 +205,10 @@ const downloadImage = (imageUrl: string, index: number) => {
       <v-col cols="12" md="10" lg="8">
         <v-card elevation="3" class="rounded-lg">
           <v-card-title class="text-center py-6">
-            <v-icon size="36" color="primary" class="mb-3">mdi-vector-line</v-icon>
-            <h2 class="text-h4 font-weight-bold">ระบบตรวจจับเส้นและปรับองศาอัตโนมัติ</h2>
+            <v-icon size="36" color="primary" class="mb-3">mdi-face-recognition</v-icon>
+            <h2 class="text-h4 font-weight-bold">ระบบตรวจจับใบหน้า</h2>
             <div class="text-subtitle-1 text-medium-emphasis">
-              อัพโหลดรูปภาพเพื่อตรวจจับเส้นตรงและปรับองศา
+              อัพโหลดรูปภาพเพื่อตรวจจับและปรับแต่งรูปถ่าย
             </div>
           </v-card-title>
 
