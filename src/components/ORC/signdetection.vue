@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row justify="center">
       <v-col cols="12" md="10" lg="8">
-        <!-- หัวข้อ -->
+
         <v-card elevation="3" class="rounded-lg">
           <v-card-title class="text-center py-6">
             <v-icon size="36" color="primary" class="mb-3">mdi-gesture</v-icon>
@@ -12,12 +12,12 @@
             </div>
           </v-card-title>
 
-          <!-- ส่วนอัพโหลดรูปภาพ -->
+
           <v-card-text>
             <v-row justify="center">
               <v-col cols="12" md="8">
                 <v-file-input
-                  v-model="selectedFile"
+                
                   accept="image/*"
                   @change="onImageUpload"
                   :rules="[v => !!v || 'กรุณาเลือกไฟล์รูปภาพ']"
@@ -30,7 +30,7 @@
                   class="mb-4"
                 />
 
-                <!-- แสดงรูปภาพที่อัพโหลด -->
+
                 <v-fade-transition>
                   <v-card v-if="imageUrl" class="mb-4 pa-2" variant="outlined">
                     <div class="d-flex justify-center position-relative">
@@ -52,7 +52,7 @@
                   </v-card>
                 </v-fade-transition>
 
-                <!-- ปุ่มเริ่มตรวจจับ -->
+ 
                 <v-btn
                   block
                   color="primary"
@@ -71,314 +71,202 @@
           </v-card-text>
         </v-card>
 
-        <!-- แสดงผลลัพธ์ -->
-        <v-expand-transition>
+
+        <v-fade-transition>
           <v-card v-if="croppedImages.length > 0" class="mt-6" elevation="3">
-            <v-card-title class="py-4 d-flex justify-space-between align-center">
-              <div>
-                <v-icon color="success" class="mr-2">mdi-check-circle</v-icon>
-                ผลการตรวจจับลายเซ็น
-              </div>
-              <v-btn
-                icon
-                @click="showAllResults = !showAllResults"
-                :color="showAllResults ? 'primary' : ''"
-              >
-                <v-icon>{{ showAllResults ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-              </v-btn>
+            <v-card-title class="py-4">
+              <v-icon color="success" class="mr-2">mdi-check-circle</v-icon>
+              ผลการตรวจจับลายเซ็น
             </v-card-title>
             
-            <v-expand-transition>
-              <v-card-text v-if="showAllResults">
-                <v-row>
-                  <v-col
-                    v-for="(image, index) in croppedImages"
-                    :key="index"
-                    cols="12"
-                    sm="6"
-                    md="4"
-                  >
-                    <v-hover v-slot="{ isHovering, props }">
-                      <v-card
-                        v-bind="props"
-                        :elevation="isHovering ? 8 : 2"
-                        class="transition-swing"
+            <v-card-text>
+              <v-row justify="center">
+                <v-col cols="12" sm="8" md="6">
+                  <v-card class="pa-2" variant="outlined">
+                    <v-img
+                      :src="croppedImages[0]"
+                      height="300"
+                      contain
+                      class="bg-grey-lighten-2 rounded-lg"
+                    />
+                    <v-card-actions class="justify-center">
+                      <v-btn
+                        color="primary"
+                        variant="tonal"
+                        @click="downloadImage(croppedImages[0], 'signature.png')"
+                        prepend-icon="mdi-download"
                       >
-                        <v-img
-                          :src="image"
-                          height="200"
-                          cover
-                          class="bg-grey-lighten-2"
-                        />
-                        
-                        <v-card-actions>
-                          <v-btn
-                            block
-                            color="primary"
-                            variant="tonal"
-                            @click="downloadImage(image, `signature-${index + 1}.png`)"
-                            prepend-icon="mdi-download"
-                          >
-                            ดาวน์โหลด
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-hover>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-expand-transition>
-
-            <!-- แสดงตัวอย่างย่อ -->
-            <v-card-text v-if="!showAllResults">
-              <v-row>
-                <v-col cols="12" sm="6" md="4">
-                  <v-img
-                    :src="croppedImages[0]"
-                    height="200"
-                    cover
-                    class="bg-grey-lighten-2 rounded-lg"
-                  />
-                </v-col>
-                <v-col cols="12" sm="6" md="8" class="d-flex align-center">
-                  <div class="text-body-1">
-                    พบลายเซ็นทั้งหมด {{ croppedImages.length }} รายการ
-                    <v-btn
-                      color="primary"
-                      variant="text"
-                      @click="showAllResults = true"
-                      class="ml-2"
-                    >
-                      แสดงทั้งหมด
-                    </v-btn>
-                  </div>
+                        ดาวน์โหลดลายเซ็น
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
                 </v-col>
               </v-row>
             </v-card-text>
           </v-card>
-        </v-expand-transition>
+        </v-fade-transition>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import Tesseract from 'tesseract.js';
+<script setup lang="ts">
+import { ref } from 'vue'
 
-export default defineComponent({
-  name: 'TextDetection',
-  setup() {
-    // Refs
-    const canvas = ref<HTMLCanvasElement | null>(null);
-    const boundingCanvas = ref<HTMLCanvasElement | null>(null);
-    const imageRef = ref<HTMLImageElement | null>(null);
-    const imageUrl = ref<string>('');
-    const detectedText = ref<string>('');
-    const croppedImages = ref<string[]>([]);
-    const isProcessing = ref(false);
-    const selectedFile = ref<File | null>(null);
-    const showAllResults = ref(false);
 
-    // Methods
-    const onImageUpload = (event: Event) => {
-      const file = (event.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+const imageUrl = ref<string | null>(null)
+const canvas = ref<HTMLCanvasElement | null>(null)
+const boundingCanvas = ref<HTMLCanvasElement | null>(null)
+const croppedImages = ref<string[]>([])
+const isProcessing = ref(false)
+const showAllResults = ref(false)
 
-      imageUrl.value = URL.createObjectURL(file);
-      const img = new Image();
-      
+
+const onImageUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    imageUrl.value = URL.createObjectURL(file)
+    croppedImages.value = [] 
+    showAllResults.value = false
+  }
+}
+
+
+const detectText = async () => {
+  if (!imageUrl.value || !canvas.value || !boundingCanvas.value) return
+  
+  isProcessing.value = true
+  try {
+    const img = new Image()
+    img.src = imageUrl.value
+    
+    await new Promise((resolve) => {
       img.onload = () => {
-        if (!canvas.value || !boundingCanvas.value) return;
 
-        canvas.value.width = img.naturalWidth;
-        canvas.value.height = img.naturalHeight;
-        boundingCanvas.value.width = img.naturalWidth;
-        boundingCanvas.value.height = img.naturalHeight;
+        canvas.value!.width = img.width
+        canvas.value!.height = img.height
+        boundingCanvas.value!.width = img.width
+        boundingCanvas.value!.height = img.height
         
-        const ctx = canvas.value.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-        }
-      };
-      
-      img.src = imageUrl.value;
-    };
-
-    const cropSignature = (originalCanvas: HTMLCanvasElement, bbox?: { x0: number, y0: number, x1: number, y1: number }) => {
-      const ctx = originalCanvas.getContext('2d');
-      if (!ctx) return null;
-
-      const signatureCanvas = document.createElement('canvas');
-      const width = bbox ? bbox.x1 - bbox.x0 : originalCanvas.width;
-      const height = bbox ? bbox.y1 - bbox.y0 : originalCanvas.height;
-      
-      signatureCanvas.width = width;
-      signatureCanvas.height = height;
-      
-      const signatureCtx = signatureCanvas.getContext('2d');
-      if (!signatureCtx) return null;
-
-      if (bbox) {
-        // ปรับคอนทราสก่อน crop
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = width;
-        tempCanvas.height = height;
-        const tempCtx = tempCanvas.getContext('2d');
+        const ctx = canvas.value!.getContext('2d')!
+        ctx.drawImage(img, 0, 0)
         
-        if (tempCtx) {
-          tempCtx.drawImage(originalCanvas, bbox.x0, bbox.y0, width, height, 0, 0, width, height);
-          const imageData = tempCtx.getImageData(0, 0, width, height);
-          const data = imageData.data;
 
-          // ปรับคอนทราสให้สูงสุด
-          for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-            
-            // แปลงเป็นขาว-ดำ
-            const intensity = (r + g + b) / 3;
-            data[i] = data[i + 1] = data[i + 2] = intensity < 128 ? 0 : 255;
-            data[i + 3] = 255; // ความทึบแสงสูงสุด
+        const imageData = ctx.getImageData(0, 0, img.width, img.height)
+        const boundingBox = findSignatureBoundingBox(imageData)
+        
+        if (boundingBox) {
+          const croppedSignature = cropToFinalSize(img, boundingBox)
+          if (croppedSignature) {
+            croppedImages.value = [croppedSignature]
           }
-
-          tempCtx.putImageData(imageData, 0, 0);
-          signatureCtx.drawImage(tempCanvas, 0, 0);
         }
-      } else {
-        signatureCtx.drawImage(originalCanvas, 0, 0);
-      }
-
-      const imageData = signatureCtx.getImageData(0, 0, width, height);
-      const data = imageData.data;
-
-      // ประมวลผลภาพ
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
         
-        const intensity = (r + g + b) / 3;
-        const colorVariance = Math.abs(r - intensity) + Math.abs(g - intensity) + Math.abs(b - intensity);
-        const isTypedText = colorVariance < 30 && intensity < 200;
-        
-        if (isTypedText || intensity > 240) {
-          data[i + 3] = 0; // ทำให้โปร่งใส
-        } else {
-          data[i] = data[i + 1] = data[i + 2] = intensity < 128 ? 0 : 255;
-          data[i + 3] = 255;
-        }
+        resolve(true)
       }
+    })
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาดในการประมวลผล:', error)
+  } finally {
+    isProcessing.value = false
+  }
+}
 
-      signatureCtx.putImageData(imageData, 0, 0);
-      return signatureCanvas.toDataURL();
-    };
 
-    const detectText = async () => {
-      if (!imageUrl.value || !canvas.value || !boundingCanvas.value) return;
-      isProcessing.value = true;
-      showAllResults.value = false;
+const findSignatureBoundingBox = (imageData: ImageData) => {
+  const width = imageData.width
+  const height = imageData.height
+  const data = imageData.data
+  
+  let minX = width
+  let minY = height
+  let maxX = 0
+  let maxY = 0
+  let found = false
+  
+  const threshold = 128
+  
 
-      try {
-        const result = await Tesseract.recognize(
-          imageUrl.value,
-          'eng+tha',
-          {
-            logger: (m) => console.log(m),
-            tessedit_char_blacklist: '0123456789',
-            tessedit_enable_doc_dict: '0',
-            tessedit_pageseg_mode: '1'
-          }
-        );
-
-        const ctx = canvas.value.getContext('2d');
-        if (!ctx) return;
-
-        const img = new Image();
-        img.onload = () => {
-          if (!canvas.value || !boundingCanvas.value) return;
-
-          // ตั้งค่าขนาด canvas
-          canvas.value.width = img.naturalWidth;
-          canvas.value.height = img.naturalHeight;
-          boundingCanvas.value.width = img.naturalWidth;
-          boundingCanvas.value.height = img.naturalHeight;
-          
-          ctx.drawImage(img, 0, 0);
-
-          // ประมวลผลข้อความที่ตรวจพบ
-          result.data.words.forEach(word => {
-            const bbox = word.bbox;
-            const confidence = word.confidence;
-            
-            if (confidence > 80) {
-              ctx.fillStyle = 'white';
-              ctx.fillRect(bbox.x0, bbox.y0, bbox.x1 - bbox.x0, bbox.y1 - bbox.y0);
-            }
-          });
-
-          // ตัดภาพลายเซ็น
-          const signatureImage = cropSignature(canvas.value);
-          const handwrittenSignatures = result.data.words
-            .filter(word => word.confidence <= 80)
-            .map(word => cropSignature(canvas.value, word.bbox))
-            .filter((img): img is string => img !== null);
-
-          croppedImages.value = [signatureImage, ...handwrittenSignatures].filter((img): img is string => img !== null);
-
-          // วาดกรอบ
-          const boundingCtx = boundingCanvas.value.getContext('2d');
-          if (boundingCtx) {
-            boundingCtx.drawImage(canvas.value, 0, 0);
-
-            result.data.words.forEach(word => {
-              const bbox = word.bbox;
-              boundingCtx.strokeStyle = word.confidence > 80 ? 'blue' : 'red';
-              boundingCtx.lineWidth = 2;
-              boundingCtx.strokeRect(bbox.x0, bbox.y0, bbox.x1 - bbox.x0, bbox.y1 - bbox.y0);
-            });
-          }
-        };
-        img.src = imageUrl.value;
-
-        detectedText.value = result.data.text;
-      } catch (error) {
-        console.error('เกิดข้อผิดพลาดในการตรวจจับลายมือ:', error);
-      } finally {
-        isProcessing.value = false;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4
+      const gray = (data[i] + data[i + 1] + data[i + 2]) / 3
+      
+      if (gray < threshold) {
+        minX = Math.min(minX, x)
+        minY = Math.min(minY, y)
+        maxX = Math.max(maxX, x)
+        maxY = Math.max(maxY, y)
+        found = true
       }
-    };
+    }
+  }
+  
+  if (!found) return null
+  
 
-    const downloadImage = (dataUrl: string, filename: string) => {
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
+  if (boundingCanvas.value) {
+    const ctx = boundingCanvas.value.getContext('2d')!
+    ctx.clearRect(0, 0, width, height)
+    ctx.strokeStyle = '#00ff00'
+    ctx.lineWidth = 2
+    ctx.strokeRect(minX, minY, maxX - minX, maxY - minY)
+  }
+  
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY
+  }
+}
 
-    onMounted(() => {
-      console.log('Component Mounted');
-    });
+// ฟังก์ชัน crop และปรับขนาดเป็น 8x5 cm
+const cropToFinalSize = (img: HTMLImageElement, box: { x: number, y: number, width: number, height: number }) => {
+  const DPI = 96
+  const pixelsPerCm = DPI / 2.54
+  const targetWidth = 8 * pixelsPerCm
+  const targetHeight = 5 * pixelsPerCm
+  
+  const tempCanvas = document.createElement('canvas')
+  tempCanvas.width = targetWidth
+  tempCanvas.height = targetHeight
+  
+  const ctx = tempCanvas.getContext('2d')!
+  
 
-    return {
-      canvas,
-      boundingCanvas,
-      imageRef,
-      imageUrl,
-      detectedText,
-      onImageUpload,
-      detectText,
-      croppedImages,
-      downloadImage,
-      showAllResults,
-    };
-  },
-});
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, targetWidth, targetHeight)
+  
+  // คำนวณอัตราส่วนการปรับขนาด
+  const scaleX = targetWidth / box.width
+  const scaleY = targetHeight / box.height
+  const scale = Math.min(scaleX, scaleY)
+  
+  // คำนวณตำแหน่งกึ่งกลาง
+  const scaledWidth = box.width * scale
+  const scaledHeight = box.height * scale
+  const offsetX = (targetWidth - scaledWidth) / 2
+  const offsetY = (targetHeight - scaledHeight) / 2
+  
+
+  ctx.drawImage(
+    img,
+    box.x, box.y, box.width, box.height,
+    offsetX, offsetY, scaledWidth, scaledHeight
+  )
+  
+  return tempCanvas.toDataURL()
+}
+
+
+const downloadImage = (dataUrl: string, filename: string) => {
+  const link = document.createElement('a')
+  link.href = dataUrl
+  link.download = filename
+  link.click()
+}
 </script>
-
 <style scoped>
 .overlay-canvas {
   position: absolute;
@@ -393,7 +281,7 @@ export default defineComponent({
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
 }
 
-/* การจัดการ Theme */
+/* การจัดาร Theme */
 :root {
   --primary-color: #2196f3;
   --text-color: #333;

@@ -5,7 +5,6 @@ const MainLayout = () => import('../App.vue');
 const Home = () => import('../components/Home.vue');
 const personDetection =()=> import('../components/ORC/persondetection.vue')
 const signDetection =()=> import('../components/ORC/signdetection.vue')
-const personDetection2 =()=> import('../components/ORC/persondetection2.vue')
 const routes = [
   {
     path: '/',
@@ -39,13 +38,7 @@ const routes = [
     meta: { requiresAuth: false }
 
   },
-  {
-    path: '/OCR2',
-    name:'OCR2',
-    component:personDetection2,
-    meta: { requiresAuth: false }
 
-  },
   {
     path: '/registerForAdminCDG-Beaver',
     name: 'RegisterAdmin',
