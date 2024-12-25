@@ -1,6 +1,6 @@
 <template>
   <div class="layout-container" :class="{ 'dark-mode': isDarkMode }" @click="handleOutsideClick">
-    <header class="header" >
+    <header class="header">
       <nav class="navbar">
         <div class="logo">
           <h1> CDG</h1>
@@ -8,21 +8,21 @@
         <div class="user-info">
           <div class="user-name">
             <button @click="toggleDarkMode" class="theme-btn">
-            <v-icon>{{ isDarkMode ? 'mdi-white-balance-sunny' : 'mdi-moon-waning-crescent' }}</v-icon>
-          </button>
+              <v-icon>{{ isDarkMode ? 'mdi-white-balance-sunny' : 'mdi-moon-waning-crescent' }}</v-icon>
+            </button>
             <h2>{{ userData?.firstName || 'ผู้ใช้งาน' }} {{ userData?.lastName }}</h2>
           </div>
           <div class="user-role">
             <h3>{{ userData?.role || 'ไม่ระบุสิทธิ์' }}</h3>
           </div>
         </div>
-   
-       
-          <button @click="handleLogout" class="logout-btn">
-            <v-icon>mdi-logout</v-icon>
-            ออกจากระบบ
-          </button>
-       
+
+
+        <button @click="handleLogout" class="logout-btn">
+          <v-icon>mdi-logout</v-icon>
+          ออกจากระบบ
+        </button>
+
       </nav>
     </header>
 
@@ -34,75 +34,74 @@
 
         <div class="button-group" :class="{ 'menu-hidden': !showMenu }">
           <div class="profile-menu-container">
-            <button
-              class="nav-btn"
-              :class="{ active: activeComponent === 'Profile' }"
-              @click.stop="toggleProfileMenu"
-            >
+            <button class="nav-btn" :class="{ active: activeComponent === 'Profile' }" @click.stop="toggleProfileMenu">
               <v-icon class="nav-icon">mdi-account-cog</v-icon>
               <span class="nav-text">ตั้งค่าโปรไฟล์</span>
               <v-icon>{{ showProfileMenu ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
             </button>
 
             <div v-if="showProfileMenu" class="submenu">
-              <button
-                class="nav-btn submenu-btn"
-                :class="{ active: activeComponent === 'HelloWorld' }"
-                @click.stop="activeComponent = 'HelloWorld'"
-              >
+              <button class="nav-btn submenu-btn" :class="{ active: activeComponent === 'HelloWorld' }"
+                @click.stop="activeComponent = 'HelloWorld'">
                 <v-icon class="nav-icon">mdi-account-edit</v-icon>
                 <span class="nav-text">แก้ไขข้อมูลส่วนตัว</span>
               </button>
-              <button
-                class="nav-btn submenu-btn"
-                :class="{ active: activeComponent === 'newPassword' }"
-                @click.stop="activeComponent = 'newPassword'"
-              >
+              <button class="nav-btn submenu-btn" :class="{ active: activeComponent === 'newPassword' }"
+                @click.stop="activeComponent = 'newPassword'">
                 <v-icon class="nav-icon">mdi-shield-lock</v-icon>
                 <span class="nav-text">ตั้งค่าความปลอดภัย</span>
               </button>
             </div>
           </div>
 
-          <button
-            v-if="userData?.role === 'admin'"
-            class="nav-btn"
-            :class="{ active: activeComponent === 'ReportUser' }"
-            @click="activeComponent = 'ReportUser'"
-          >
+          <button v-if="userData?.role === 'admin'" class="nav-btn"
+            :class="{ active: activeComponent === 'ReportUser' }" @click="activeComponent = 'ReportUser'">
             <v-icon class="nav-icon">mdi-account-multiple</v-icon>
             <span class="nav-text">รายงานผู้ใช้</span>
           </button>
 
-          <button
-            v-if="userData?.role === 'admin'"
-            class="nav-btn"
+          <button v-if="userData?.role === 'admin'" class="nav-btn"
             :class="{ active: activeComponent === 'ManagementPosition' }"
-            @click="activeComponent = 'ManagementPosition'"
-          >
+            @click="activeComponent = 'ManagementPosition'">
             <v-icon class="nav-icon">mdi-account-cog</v-icon>
             <span class="nav-text">จัดการตำแหน่ง</span>
           </button>
 
-          <button
-            v-if="userData?.role === 'admin'"
-            class="nav-btn"
-            :class="{ active: activeComponent === 'OrganizeAll' }"
-            @click="activeComponent = 'OrganizeAll'"
-          >
+          <button v-if="userData?.role === 'admin'" class="nav-btn"
+            :class="{ active: activeComponent === 'OrganizeAll' }" @click="activeComponent = 'OrganizeAll'">
             <v-icon class="nav-icon">mdi-sitemap</v-icon>
             <span class="nav-text">องค์กร</span>
           </button>
 
-          <button
-            v-if="userData?.role === 'personnel'"
-            class="nav-btn"
-            :class="{ active: activeComponent === 'DicisionTree' }"
-            @click="activeComponent = 'DicisionTree'"
-          >
+          <button v-if="userData?.role === 'personnel'" class="nav-btn"
+            :class="{ active: activeComponent === 'DicisionTree' }" @click="activeComponent = 'DicisionTree'">
             <v-icon class="nav-icon">mdi-sitemap</v-icon>
             <span class="nav-text">แผนผังองค์กร</span>
           </button>
+
+          <div class="profile-menu-container">
+            <button class="nav-btn" :class="{ active: activeComponent === 'Profile' }"
+              @click.stop="toggleProfileMenuOCR">
+              <v-icon class="nav-icon">mdi-file-document-multiple</v-icon>
+              <span class="nav-text">อ่านข้อมูลจากเอกสาร</span>
+              <v-icon>{{ showProfileMenuOCR ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+            </button>
+
+            <div v-if="showProfileMenuOCR" class="submenu">
+              <button class="nav-btn submenu-btn" :class="{ active: activeComponent === 'SignDetection' }"
+                @click.stop="activeComponent = 'SignDetection'">
+                <v-icon class="nav-icon">mdi-file-sign</v-icon>
+                <span class="nav-text">ตรวจหาลายเซ็นต์</span>
+              </button>
+              <button class="nav-btn submenu-btn" :class="{ active: activeComponent === 'PersonDetection' }"
+                @click.stop="activeComponent = 'PersonDetection'">
+                <v-icon class="nav-icon">mdi-face-recognition</v-icon>
+                <span class="nav-text">ตรวจหารูปถ่ายทางการ</span>
+              </button>
+            </div>
+          </div>
+
+
         </div>
       </div>
 
@@ -115,13 +114,11 @@
         <DicisionTree v-if="activeComponent === 'DicisionTree'" />
         <OrganizeAll v-if="activeComponent === 'OrganizeAll'" />
         <newPassword v-if="activeComponent === 'newPassword'" />
+        <SignDetection v-if="activeComponent === 'SignDetection'" />
+        <PersonDetection v-if="activeComponent === 'PersonDetection'" />
         <router-view></router-view>
       </div>
     </main>
-
-    <footer class="footer">
-      <p>&copy; 2024 CDG@trainee. All rights reserved.</p>
-    </footer>
   </div>
 </template>
 
@@ -137,13 +134,16 @@ import ManagementPosition from './management/ManagementPosition.vue';
 import OrganizeAll from './organize/organizeAll.vue';
 import newPassword from './newPassword.vue';
 import Welcome from './Welcome.vue'
+import SignDetection from './ORC/signdetection.vue';
+import PersonDetection from './ORC/persondetection.vue';
 const activeComponent = ref<string | null>(null);
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const showMenu = ref(true);
+
 const isDarkMode = ref(false);
 const showProfileMenu = ref(false);
-
+const showProfileMenuOCR = ref(false);
 activeComponent.value = 'Welcome';
 
 function reloadData() {
@@ -153,8 +153,12 @@ const toggleMenu = () => {
   showMenu.value = !showMenu.value;
 }
 
+
 const toggleProfileMenu = () => {
   showProfileMenu.value = !showProfileMenu.value;
+}
+const toggleProfileMenuOCR = () => {
+  showProfileMenuOCR.value = !showProfileMenuOCR.value;
 }
 
 const handleOutsideClick = (event: MouseEvent) => {
@@ -485,8 +489,15 @@ const handleLogout = async () => {
 
 /* เพิ่ม animation effects */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .nav-btn {
@@ -544,6 +555,7 @@ const handleLogout = async () => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -579,7 +591,7 @@ const handleLogout = async () => {
 
 .profile-menu-container {
   position: relative;
-  
+
 }
 
 .submenu {
@@ -605,6 +617,7 @@ const handleLogout = async () => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -628,5 +641,4 @@ const handleLogout = async () => {
   background: #2d2d2d;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-
 </style>
